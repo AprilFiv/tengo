@@ -1,6 +1,7 @@
 package tengo
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
@@ -238,6 +239,8 @@ func ToInterface(o Object) (res interface{}) {
 		res = nil
 	case Object:
 		return o
+	case *Context:
+		return o.Value
 	}
 	return
 }
@@ -304,6 +307,8 @@ func FromInterface(v interface{}) (Object, error) {
 		return v, nil
 	case CallableFunc:
 		return &UserFunction{Value: v}, nil
+	case context.Context:
+		return &Context{Value: v}, nil
 	}
 	return nil, fmt.Errorf("cannot convert to object: %T", v)
 }

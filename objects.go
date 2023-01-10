@@ -2,6 +2,7 @@ package tengo
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"math"
 	"strconv"
@@ -1609,4 +1610,14 @@ func (o *UserFunction) Call(args ...Object) (Object, error) {
 // CanCall returns whether the Object can be Called.
 func (o *UserFunction) CanCall() bool {
 	return true
+}
+
+type Context struct {
+	ObjectImpl
+	Value context.Context
+}
+
+// TypeName returns the name of the type.
+func (o *Context) TypeName() string {
+	return "context"
 }
