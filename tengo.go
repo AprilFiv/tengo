@@ -196,6 +196,16 @@ func ToTime(o Object) (v time.Time, ok bool) {
 	return
 }
 
+// ToContext will try to convert object o to context.Context value.
+func ToContext(o Object) (v context.Context, ok bool) {
+	switch o := o.(type) {
+	case *Context:
+		v = o.Value
+		ok = true
+	}
+	return
+}
+
 // ToInterface attempts to convert an object o to an interface{} value
 func ToInterface(o Object) (res interface{}) {
 	switch o := o.(type) {
@@ -237,10 +247,10 @@ func ToInterface(o Object) (res interface{}) {
 		res = errors.New(o.String())
 	case *Undefined:
 		res = nil
-	case Object:
-		return o
 	case *Context:
 		return o.Value
+	case Object:
+		return o
 	}
 	return
 }
@@ -303,12 +313,12 @@ func FromInterface(v interface{}) (Object, error) {
 		return &Array{Value: arr}, nil
 	case time.Time:
 		return &Time{Value: v}, nil
+	case context.Context:
+		return &Context{Value: v}, nil
 	case Object:
 		return v, nil
 	case CallableFunc:
 		return &UserFunction{Value: v}, nil
-	case context.Context:
-		return &Context{Value: v}, nil
 	}
 	return nil, fmt.Errorf("cannot convert to object: %T", v)
 }
