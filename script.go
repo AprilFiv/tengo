@@ -212,7 +212,19 @@ func (c *Compiled) Run() error {
 }
 
 // Run executes the compiled script in the virtual machine.
-func (c *Compiled) RunWithGlobals(ctx context.Context, globals []Object) error {
+func (c *Compiled) RunWithGlobalVariables(globalVariables map[string]interface{}) error {
+	globals := make([]Object, len(globalVariables))
+	for name, v := range globalVariables {
+		obj, err := FromInterface(v)
+		if err != nil {
+			return err
+		}
+		idx, ok := c.globalIndexes[name]
+		if !ok {
+			return fmt.Errorf("'%s' is not defined", name)
+		}
+		globals[idx] = obj
+	}
 	v := NewVM(c.bytecode, globals, c.maxAllocs)
 	return v.Run()
 }
