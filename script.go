@@ -211,22 +211,57 @@ func (c *Compiled) Run() error {
 	return v.Run()
 }
 
-// Run executes the compiled script in the virtual machine.
-func (c *Compiled) RunWithGlobalVariables(globalVariables map[string]interface{}) error {
+func (c *Compiled) SolveVariables(globalVariables map[string]interface{}) ([]Object, error) {
 	globals := make([]Object, len(c.globals))
 	for name, v := range globalVariables {
 		obj, err := FromInterface(v)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		idx, ok := c.globalIndexes[name]
 		if !ok {
-			return fmt.Errorf("'%s' is not defined", name)
+			return nil, fmt.Errorf("'%s' is not defined", name)
 		}
 		globals[idx] = obj
 	}
-	v := NewVM(c.bytecode, globals, c.maxAllocs)
-	return v.Run()
+	return globals, nil
+}
+
+func (c *Compiled) GetWithGlobals(name string, globals []Object) *Variable {
+	value := UndefinedValue
+	if idx, ok := c.globalIndexes[name]; ok {
+		value = globals[idx]
+		if value == nil {
+			value = UndefinedValue
+		}
+	}
+	return &Variable{
+		name:  name,
+		value: value,
+	}
+}
+
+func (c *Compiled) GetAllWithGlobals(globals []Object) []*Variable {
+	c.lock.RLock()
+	defer c.lock.RUnlock()
+
+	var vars []*Variable
+	for name, idx := range c.globalIndexes {
+		value := globals[idx]
+		if value == nil {
+			value = UndefinedValue
+		}
+		vars = append(vars, &Variable{
+			name:  name,
+			value: value,
+		})
+	}
+	return vars
+}
+
+// Run executes the compiled script in the virtual machine.
+func (c *Compiled) RunWithGlobals(globals []Object) error {
+	return NewVM(c.bytecode, globals, c.maxAllocs).Run()
 }
 
 // RunContext is like Run but includes a context.
