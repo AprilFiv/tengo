@@ -213,7 +213,7 @@ func (c *Compiled) Run() error {
 
 // Run executes the compiled script in the virtual machine.
 func (c *Compiled) RunWithGlobalVariables(globalVariables map[string]interface{}) error {
-	globals := make([]Object, len(globalVariables))
+	globals := make([]Object, len(c.globals))
 	for name, v := range globalVariables {
 		obj, err := FromInterface(v)
 		if err != nil {
