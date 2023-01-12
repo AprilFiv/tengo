@@ -211,6 +211,12 @@ func (c *Compiled) Run() error {
 	return v.Run()
 }
 
+// Run executes the compiled script in the virtual machine.
+func (c *Compiled) RunWithGlobals(ctx context.Context, globals []Object) error {
+	v := NewVM(c.bytecode, globals, c.maxAllocs)
+	return v.Run()
+}
+
 // RunContext is like Run but includes a context.
 func (c *Compiled) RunContext(ctx context.Context) (err error) {
 	c.lock.Lock()
